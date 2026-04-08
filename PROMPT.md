@@ -1,23 +1,27 @@
-# Session Prompt — Stage 2: Layout Refinement
+# Session Prompt — Stage 2: Full Width Fix
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-The Stage 2 Membership Review screen needs layout fixes. Do not rebuild from scratch — just fix the following:
+The two cards on the Stage 2 Membership Review screen are too narrow and centred. Fix this:
 
-**1. Two-column proportions**
-Change the Grid layout to 60/40 split:
-- Left column (membership card): `<Grid item xs={12} md={7}>` 
-- Right column (renewal panel): `<Grid item xs={12} md={5}>`
+**Remove the maxWidth constraint.** The content wrapper around the Grid should NOT have `maxWidth: 900` or `mx: 'auto'`. Delete those styles entirely.
 
-**2. Eliminate dead space on the right**
-The renewal panel card should fill the full height of the column. Add `sx={{ height: '100%' }}` to the Card and ensure the CardContent stretches properly with `display: 'flex', flexDirection: 'column', justifyContent: 'space-between'`.
+The content area Box should simply be:
+```tsx
+<Box sx={{ p: 3, flex: 1, overflowY: 'auto', backgroundColor: 'background.default' }}>
+  <Grid container spacing={3}>
+    <Grid item xs={12} md={7}>
+      {/* Membership card */}
+    </Grid>
+    <Grid item xs={12} md={5}>
+      {/* Renewal panel */}
+    </Grid>
+  </Grid>
+</Box>
+```
 
-**3. Content area max width**
-Wrap the two-column Grid in a container with `maxWidth: 900` and `mx: 'auto'` so it doesn't stretch across the full screen on wide viewports.
+The Grid should stretch edge to edge within the padded content area. Both cards should fill their full column width with `sx={{ height: '100%' }}` on the Card component.
 
-**4. No em dashes in copy**
-Check all text content in the component. Replace any em dashes (--) with a space or reword the phrase. Use plain, clean Australian English copy throughout.
-
-Do not change anything else — colours, components, stepper, navbar, and footer nav are correct as-is.
+Do not change anything else.
