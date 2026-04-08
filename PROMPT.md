@@ -1,42 +1,31 @@
-# Session Prompt — Stage 2: Hero Band + Background Fix
+# Session Prompt — Stage 2: Header Reorder + Progress Bar Removal
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-Surgical fixes to Stage 2. Do not rebuild.
+Two surgical changes to Stage 2. Do not rebuild anything else.
 
-**1. Add the purple hero band**
-The greeting ("Hi Michael, welcome back") is currently plain text in the content area. Move it into a proper full-width gradient hero band. Replace that plain text with this — insert it as a direct child of the outer page Box, AFTER the AppBar (navbar) and BEFORE the stepper Box:
+**1. Remove the progress bar completely**
+Delete ALL of the following — every line related to the progress bar:
+- The Box containing "Step 2 of 4: Your Plan" and "50% Complete" text
+- The `LinearProgress` component
+- Any `progressPercentage` calculation variable if it's now unused
 
-```tsx
-<Box sx={{
-  background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-  px: 4,
-  py: 3,
-  color: 'white',
-}}>
-  <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-    Hi Michael, welcome back.
-  </Typography>
-  <Typography variant="body2" sx={{ opacity: 0.85 }}>
-    This is your 3rd renewal. Your Standard membership expires on 30 April 2026.
-  </Typography>
-</Box>
-```
+Keep the `Stepper` component. Keep the white Box that wraps the stepper. Only delete the progress bar and its label row.
 
-Remove the plain text greeting from inside the content area entirely.
+**2. Move the welcome band BELOW the stepper**
+Currently the order is: Navbar → Welcome band → Stepper → Content.
 
-**2. Fix the background colour**
-The content area Box background is still too light. Set it explicitly to `'#ebebeb'` — not a theme token, hardcode this value so it definitely applies:
-```tsx
-<Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 3, backgroundColor: '#ebebeb' }}>
-```
+Change it to: Navbar → Stepper Box → Welcome band → Content.
 
-**3. Fix left card dead space**
-The membership card is stretching to fill the column height, leaving a large gap below the expiry chip. Fix this:
-- Remove `sx={{ height: '100%' }}` from the LEFT card only
-- The left card should be `height: 'auto'` — it should only be as tall as its content
-- The right column cards (renewal panel + upgrade prompt) can stay as-is
+The welcome band Box (the purple gradient with "Hi Michael, welcome back") should be moved so it sits AFTER the stepper Box and BEFORE the content area Box. The stepper Box should still have its white background and bottom border. The welcome band should appear as a full-width coloured section directly above the cards.
 
-Do not change any other styles, copy, or components.
+The final page structure top to bottom should be:
+1. AppBar (navbar)
+2. White Box with bottom border containing the Stepper
+3. Gradient welcome Box (purple, "Hi Michael, welcome back")
+4. Grey content Box (the cards)
+5. White footer Box (Previous / Continue buttons)
+
+Do not change any styles, copy, or other components.
