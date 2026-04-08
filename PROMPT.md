@@ -1,39 +1,27 @@
-# Session Prompt — Stage 2: Full Width Fix (explicit)
+# Session Prompt — Stage 2: Grid Fix
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-The Stage 2 page cards are still only filling about half the screen width. There is a width constraint somewhere in the component tree. Find and fix it.
+The Grid layout is broken because of a margin conflict with MUI's spacing system. Fix it exactly like this:
 
-**Search the entire MembershipReview component for any of these and remove them:**
-- `maxWidth` (any value)
-- `width: '50%'` or similar fixed widths
-- `Container` from MUI (this adds a maxWidth by default — replace with `Box` if found)
-- Any `mx: 'auto'` combined with a width constraint
-
-**The outer page Box must be:**
+**Content area Box — add `overflow: 'hidden'` and remove any padding from the sides:**
 ```tsx
-<Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', width: '100%' }}>
+<Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', pt: 3, pb: 3, px: 3, backgroundColor: 'background.default' }}>
 ```
 
-**The content area Box must be:**
+**Grid container — remove `margin: 0` and `width: '100%'` entirely. Just use:**
 ```tsx
-<Box sx={{ flex: 1, overflowY: 'auto', p: 3, backgroundColor: 'background.default', width: '100%' }}>
+<Grid container spacing={3}>
 ```
 
-**The Grid container must be:**
+MUI Grid manages its own negative margins for spacing internally. Adding `margin: 0` overrides this and breaks the layout. The parent Box with `overflowX: 'hidden'` handles any edge bleed from the negative margins.
+
+**Grid items stay as:**
 ```tsx
-<Grid container spacing={3} sx={{ width: '100%', margin: 0 }}>
-  <Grid item xs={12} md={7}>
-    {/* Membership card */}
-  </Grid>
-  <Grid item xs={12} md={5}>
-    {/* Renewal panel */}
-  </Grid>
-</Grid>
+<Grid item xs={12} md={7}>  {/* Membership card */}
+<Grid item xs={12} md={5}>  {/* Renewal panel */}
 ```
 
-Also check `src/App.tsx` and `src/main.tsx` — if there is a MUI `Container` component wrapping the routes, replace it with a plain `Box sx={{ width: '100%' }}`.
-
-Do not change anything else — colours, copy, stepper, and footer nav are correct.
+Do not change anything else.
