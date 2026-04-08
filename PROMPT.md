@@ -39,7 +39,4 @@ The membership card is stretching to fill the column height, leaving a large gap
 - The left card should be `height: 'auto'` — it should only be as tall as its content
 - The right column cards (renewal panel + upgrade prompt) can stay as-is
 
-**4. Restore the stepper if missing**
-The stepper (showing steps 1-4: Verify, Your Plan, Payment, Confirmation) should appear between the hero band and the content area, inside a white Box with a bottom border. If it was removed, add it back. Active step = 1 (index 1, "Your Plan"). Use `#92248E` for active and completed step icon colour.
-
 Do not change any other styles, copy, or components.
