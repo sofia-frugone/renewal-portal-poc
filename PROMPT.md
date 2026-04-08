@@ -1,4 +1,4 @@
-# Session Prompt — Stage 3: Plan Comparison
+# Session Prompt — Stage 2 Revised: Inline Upgrade Prompt
 
 > Copy everything below this line and paste into Claude Code.
 
@@ -6,95 +6,60 @@
 
 Read CLAUDE.md before writing any code.
 
-Build Stage 3 — Plan Comparison at `src/pages/PlanComparison.tsx` and wire it to the `/renew/choose` route in `App.tsx`.
+We are revising the portal from a 5-stage flow to a 4-stage flow. The separate Plan Comparison page (Stage 3, `/renew/choose`) is being removed. Plan selection is now handled inline on the Membership Review page.
 
-**Layout:** Same page shell as Stage 2 — navbar, stepper (active step = 2, "Choose Plan"), progress bar at 60%, content area, footer nav.
-
-**Content area:**
-
-Page heading:
+**Update the routes in `App.tsx`:**
 ```
-Choose your plan
-Your membership renews on 1 May 2026. Select the plan that's right for you.
+/renew           → Stage 1 (Verify — placeholder)
+/renew/plan      → Stage 2 (Membership Review — update this)
+/renew/payment   → Stage 3 (Payment — placeholder)
+/renew/confirm   → Stage 4 (Confirmation — placeholder)
 ```
+Delete the `/renew/choose` route entirely.
 
-Display 3 plan cards in a row using Grid v2:
-```tsx
-<Grid container spacing={3}>
-  <Grid size={4}>  {/* Basic */}
-  <Grid size={4}>  {/* Standard — current plan, highlighted */}
-  <Grid size={4}>  {/* Premium */}
-</Grid>
-```
-
-**Plan data:**
+**Update the Stepper in all pages to 4 steps:**
 ```ts
-const plans = [
-  {
-    name: 'Basic',
-    price: 79,
-    description: 'Essential cover for everyday drivers',
-    inclusions: [
-      'Towing up to 20km',
-      'Emergency fuel delivery',
-      'Jump start assistance',
-      'Flat tyre assistance',
-    ],
-    isCurrent: false,
-    isRecommended: false,
-  },
-  {
-    name: 'Standard',
-    price: 109,
-    description: 'Our most popular plan for complete peace of mind',
-    inclusions: [
-      'Towing up to 50km',
-      'Emergency fuel delivery',
-      'Jump start & battery assistance',
-      'Flat tyre assistance',
-      'Accident coordination',
-    ],
-    isCurrent: true,
-    isRecommended: true,
-  },
-  {
-    name: 'Premium',
-    price: 149,
-    description: 'Maximum cover for total confidence on the road',
-    inclusions: [
-      'Towing up to 100km',
-      'Emergency fuel delivery',
-      'Jump start & battery assistance',
-      'Flat tyre assistance',
-      'Accident coordination',
-      'Key lockout assistance',
-      'Caravan & trailer cover',
-    ],
-    isCurrent: false,
-    isRecommended: false,
-  },
-]
+const RENEWAL_STEPS = ['Verify', 'Your Plan', 'Payment', 'Confirmation'];
 ```
 
-**Plan card design:**
-- All cards: `borderRadius: 3`, `height: '100%'`, hover effect (`translateY(-4px)`, deeper shadow), cursor pointer
-- Current plan (Standard): `border: '2px solid #92248E'` — highlighted
-- Non-current plans: `border: '1px solid #e5e7eb'`
-- "Current Plan" chip on Standard card: positioned top-right, `backgroundColor: '#92248E'`, white text
-- "Recommended" badge sits below the chip if both apply (Standard has both)
-- Price displayed as `$109/year` in large bold text (`variant="h4"`, `fontWeight: 700`, `color: 'primary.main'`)
-- Inclusions list: checkmark icon (`CheckCircle` from `@mui/icons-material`, `fontSize: 'small'`, `color: '#10b981'`) next to each item
-- CTA button per card:
-  - Current plan: `variant="contained"` with label "Renew with this plan"
-  - Other plans: `variant="outlined"` with label "Select this plan"
+---
 
-**State:**
-- `selectedPlan` state, default `'Standard'`
-- Clicking a card or its button sets `selectedPlan`
-- Selected (non-current) plan card gets `border: '2px solid #92248E'`
+**Update Stage 2 — Membership Review (`src/pages/MembershipReview.tsx`):**
+
+The page layout stays the same. Update the content area:
+
+**Left column (size={8}) — Membership card:** no changes needed.
+
+**Right column (size={4}) — Renewal panel:** add an upgrade prompt section below the existing renewal panel card.
+
+After the renewal panel Card, add a second Card for the upgrade prompt:
+
+```tsx
+<Card sx={{ borderRadius: 3, border: '1px solid #e5e7eb', mt: 2 }}>
+  <CardContent sx={{ p: 3 }}>
+    <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1 }}>
+      WANT MORE COVER?
+    </Typography>
+    <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, mb: 0.5 }}>
+      Upgrade to Premium
+    </Typography>
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      Towing up to 100km, key lockout assistance and caravan cover — for $40 more per year.
+    </Typography>
+    <Button variant="outlined" color="primary" fullWidth sx={{ borderRadius: 2, mb: 1 }}>
+      Upgrade for $149/year
+    </Button>
+    <Button variant="text" color="primary" fullWidth sx={{ fontSize: '0.8rem' }}>
+      Compare all plans
+    </Button>
+  </CardContent>
+</Card>
+```
+
+"Compare all plans" opens a MUI `Drawer` from the right side (anchor="right", width 420px) showing the 3 plan cards stacked vertically (Basic $79, Standard $109 current, Premium $149). Each plan card in the drawer shows name, price, inclusions list with CheckCircle icons, and a select button. Selecting a plan closes the drawer and updates a `selectedPlan` state on the page. The renewal panel CTA updates to reflect the selected plan price.
 
 **Footer nav:**
-- "Previous" goes back to `/renew/plan`
-- "Continue" goes to `/renew/payment`, disabled until a plan is selected (default is Standard so it should be enabled immediately)
+- "Previous" — disabled on this page (it's the entry point from magic link)
+- "Continue" → `/renew/payment`
 
-Mobile: stack cards vertically on `xs`, row on `md+`.
+Do not rebuild everything — surgical updates only. Keep all existing styles, colours, and copy.
