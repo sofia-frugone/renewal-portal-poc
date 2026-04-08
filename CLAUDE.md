@@ -327,14 +327,14 @@ showError('Payment failed. Please try again.');
   <CardContent sx={{ p: 3 }}>
     <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Payment Details</Typography>
     <Grid container spacing={2}>
-      <Grid item xs={12}>
+      <Grid size={12}>
         <TextField fullWidth label="Card Number" placeholder="1234 5678 9012 3456"
           sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#92248E' } } }} />
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <TextField fullWidth label="Expiry" placeholder="MM/YY" />
       </Grid>
-      <Grid item xs={6}>
+      <Grid size={6}>
         <TextField fullWidth label="CVV" placeholder="123" />
       </Grid>
     </Grid>
