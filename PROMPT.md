@@ -1,38 +1,45 @@
-# Session Prompt — Stage 2: Visual Polish
+# Session Prompt — Stage 2: Hero Band + Background Fix
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-Two changes to Stage 2 — Membership Review. Surgical edits only, do not rebuild.
+Surgical fixes to Stage 2. Do not rebuild.
 
-**1. Remove the progress bar**
-Delete the `LinearProgress` component and its surrounding Box (the one showing "Step X of Y" text and the gradient bar). Keep the `Stepper` component — that stays. Only remove the progress bar.
+**1. Add the purple hero band**
+The greeting ("Hi Michael, welcome back") is currently plain text in the content area. Move it into a proper full-width gradient hero band. Replace that plain text with this — insert it as a direct child of the outer page Box, AFTER the AppBar (navbar) and BEFORE the stepper Box:
 
-**2. Reduce the starkness — add visual depth to the background**
-The page feels too white and flat. Make these changes:
-
-- Change the content area background from `background.default` (`#f9fafb`) to a slightly deeper warm grey: `sx={{ backgroundColor: '#f0f0f0' }}`
-
-- Add a subtle purple gradient hero band between the navbar and the stepper section. Insert this Box after the AppBar and before the stepper Box:
 ```tsx
 <Box sx={{
   background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-  px: 3,
-  py: 4,
+  px: 4,
+  py: 3,
   color: 'white',
 }}>
   <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
-    Hi Michael, your membership is due for renewal.
+    Hi Michael, welcome back.
   </Typography>
   <Typography variant="body2" sx={{ opacity: 0.85 }}>
-    Your Standard membership expires on 30 April 2026. Renew today to stay covered.
+    This is your 3rd renewal. Your Standard membership expires on 30 April 2026.
   </Typography>
 </Box>
 ```
 
-- Remove the greeting/expiry text from inside the membership card if it's duplicated there — the hero band now owns that message.
+Remove the plain text greeting from inside the content area entirely.
 
-- Give both cards a slightly more elevated look: `boxShadow: '0 2px 8px rgba(0,0,0,0.10)'`
+**2. Fix the background colour**
+The content area Box background is still too light. Set it explicitly to `'#ebebeb'` — not a theme token, hardcode this value so it definitely applies:
+```tsx
+<Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 3, backgroundColor: '#ebebeb' }}>
+```
 
-Do not change any copy, layout proportions, stepper, or footer nav.
+**3. Fix left card dead space**
+The membership card is stretching to fill the column height, leaving a large gap below the expiry chip. Fix this:
+- Remove `sx={{ height: '100%' }}` from the LEFT card only
+- The left card should be `height: 'auto'` — it should only be as tall as its content
+- The right column cards (renewal panel + upgrade prompt) can stay as-is
+
+**4. Restore the stepper if missing**
+The stepper (showing steps 1-4: Verify, Your Plan, Payment, Confirmation) should appear between the hero band and the content area, inside a white Box with a bottom border. If it was removed, add it back. Active step = 1 (index 1, "Your Plan"). Use `#92248E` for active and completed step icon colour.
+
+Do not change any other styles, copy, or components.
