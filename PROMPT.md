@@ -1,27 +1,100 @@
-# Session Prompt — Stage 2: Polish
+# Session Prompt — Stage 3: Plan Comparison
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-Make the following polish changes to the Stage 2 Membership Review screen. Do not rebuild — surgical changes only.
+Read CLAUDE.md before writing any code.
 
-**1. Membership card header — reduce height and lighten it up**
-The purple header bar on the membership card is too heavy. Change it to:
-```tsx
-<Box sx={{ backgroundColor: 'primary.main', px: 3, py: 2 }}>
+Build Stage 3 — Plan Comparison at `src/pages/PlanComparison.tsx` and wire it to the `/renew/choose` route in `App.tsx`.
+
+**Layout:** Same page shell as Stage 2 — navbar, stepper (active step = 2, "Choose Plan"), progress bar at 60%, content area, footer nav.
+
+**Content area:**
+
+Page heading:
 ```
-Reduce `py` to `1.5` if it's currently larger. The header should be compact, not a banner.
+Choose your plan
+Your membership renews on 1 May 2026. Select the plan that's right for you.
+```
 
-**2. Right card (renewal panel) — match height of left card**
-Add `sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}` to the renewal panel Card.
-Add `sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}` to its CardContent.
-This ensures the right card stretches to match the left card height.
+Display 3 plan cards in a row using Grid v2:
+```tsx
+<Grid container spacing={3}>
+  <Grid size={4}>  {/* Basic */}
+  <Grid size={4}>  {/* Standard — current plan, highlighted */}
+  <Grid size={4}>  {/* Premium */}
+</Grid>
+```
 
-**3. Reduce purple saturation overall**
-The page has too much purple. Make these changes:
-- Navbar: change `backgroundColor` from `primary.main` to `#4a0048` (darker, more refined)
-- Membership card header: keep `primary.main` but reduce `py` as above — the smaller size will reduce visual weight
-- Stepper active/completed icon colour stays `#92248E` — do not change
+**Plan data:**
+```ts
+const plans = [
+  {
+    name: 'Basic',
+    price: 79,
+    description: 'Essential cover for everyday drivers',
+    inclusions: [
+      'Towing up to 20km',
+      'Emergency fuel delivery',
+      'Jump start assistance',
+      'Flat tyre assistance',
+    ],
+    isCurrent: false,
+    isRecommended: false,
+  },
+  {
+    name: 'Standard',
+    price: 109,
+    description: 'Our most popular plan for complete peace of mind',
+    inclusions: [
+      'Towing up to 50km',
+      'Emergency fuel delivery',
+      'Jump start & battery assistance',
+      'Flat tyre assistance',
+      'Accident coordination',
+    ],
+    isCurrent: true,
+    isRecommended: true,
+  },
+  {
+    name: 'Premium',
+    price: 149,
+    description: 'Maximum cover for total confidence on the road',
+    inclusions: [
+      'Towing up to 100km',
+      'Emergency fuel delivery',
+      'Jump start & battery assistance',
+      'Flat tyre assistance',
+      'Accident coordination',
+      'Key lockout assistance',
+      'Caravan & trailer cover',
+    ],
+    isCurrent: false,
+    isRecommended: false,
+  },
+]
+```
 
-Do not change any copy, layout proportions, or other components.
+**Plan card design:**
+- All cards: `borderRadius: 3`, `height: '100%'`, hover effect (`translateY(-4px)`, deeper shadow), cursor pointer
+- Current plan (Standard): `border: '2px solid #92248E'` — highlighted
+- Non-current plans: `border: '1px solid #e5e7eb'`
+- "Current Plan" chip on Standard card: positioned top-right, `backgroundColor: '#92248E'`, white text
+- "Recommended" badge sits below the chip if both apply (Standard has both)
+- Price displayed as `$109/year` in large bold text (`variant="h4"`, `fontWeight: 700`, `color: 'primary.main'`)
+- Inclusions list: checkmark icon (`CheckCircle` from `@mui/icons-material`, `fontSize: 'small'`, `color: '#10b981'`) next to each item
+- CTA button per card:
+  - Current plan: `variant="contained"` with label "Renew with this plan"
+  - Other plans: `variant="outlined"` with label "Select this plan"
+
+**State:**
+- `selectedPlan` state, default `'Standard'`
+- Clicking a card or its button sets `selectedPlan`
+- Selected (non-current) plan card gets `border: '2px solid #92248E'`
+
+**Footer nav:**
+- "Previous" goes back to `/renew/plan`
+- "Continue" goes to `/renew/payment`, disabled until a plan is selected (default is Standard so it should be enabled immediately)
+
+Mobile: stack cards vertically on `xs`, row on `md+`.
