@@ -1,65 +1,38 @@
-# Session Prompt — Stage 2 Revised: Inline Upgrade Prompt
+# Session Prompt — Stage 2: Visual Polish
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-Read CLAUDE.md before writing any code.
+Two changes to Stage 2 — Membership Review. Surgical edits only, do not rebuild.
 
-We are revising the portal from a 5-stage flow to a 4-stage flow. The separate Plan Comparison page (Stage 3, `/renew/choose`) is being removed. Plan selection is now handled inline on the Membership Review page.
+**1. Remove the progress bar**
+Delete the `LinearProgress` component and its surrounding Box (the one showing "Step X of Y" text and the gradient bar). Keep the `Stepper` component — that stays. Only remove the progress bar.
 
-**Update the routes in `App.tsx`:**
-```
-/renew           → Stage 1 (Verify — placeholder)
-/renew/plan      → Stage 2 (Membership Review — update this)
-/renew/payment   → Stage 3 (Payment — placeholder)
-/renew/confirm   → Stage 4 (Confirmation — placeholder)
-```
-Delete the `/renew/choose` route entirely.
+**2. Reduce the starkness — add visual depth to the background**
+The page feels too white and flat. Make these changes:
 
-**Update the Stepper in all pages to 4 steps:**
-```ts
-const RENEWAL_STEPS = ['Verify', 'Your Plan', 'Payment', 'Confirmation'];
-```
+- Change the content area background from `background.default` (`#f9fafb`) to a slightly deeper warm grey: `sx={{ backgroundColor: '#f0f0f0' }}`
 
----
-
-**Update Stage 2 — Membership Review (`src/pages/MembershipReview.tsx`):**
-
-The page layout stays the same. Update the content area:
-
-**Left column (size={8}) — Membership card:** no changes needed.
-
-**Right column (size={4}) — Renewal panel:** add an upgrade prompt section below the existing renewal panel card.
-
-After the renewal panel Card, add a second Card for the upgrade prompt:
-
+- Add a subtle purple gradient hero band between the navbar and the stepper section. Insert this Box after the AppBar and before the stepper Box:
 ```tsx
-<Card sx={{ borderRadius: 3, border: '1px solid #e5e7eb', mt: 2 }}>
-  <CardContent sx={{ p: 3 }}>
-    <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: 1 }}>
-      WANT MORE COVER?
-    </Typography>
-    <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, mb: 0.5 }}>
-      Upgrade to Premium
-    </Typography>
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-      Towing up to 100km, key lockout assistance and caravan cover — for $40 more per year.
-    </Typography>
-    <Button variant="outlined" color="primary" fullWidth sx={{ borderRadius: 2, mb: 1 }}>
-      Upgrade for $149/year
-    </Button>
-    <Button variant="text" color="primary" fullWidth sx={{ fontSize: '0.8rem' }}>
-      Compare all plans
-    </Button>
-  </CardContent>
-</Card>
+<Box sx={{
+  background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
+  px: 3,
+  py: 4,
+  color: 'white',
+}}>
+  <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5 }}>
+    Hi Michael, your membership is due for renewal.
+  </Typography>
+  <Typography variant="body2" sx={{ opacity: 0.85 }}>
+    Your Standard membership expires on 30 April 2026. Renew today to stay covered.
+  </Typography>
+</Box>
 ```
 
-"Compare all plans" opens a MUI `Drawer` from the right side (anchor="right", width 420px) showing the 3 plan cards stacked vertically (Basic $79, Standard $109 current, Premium $149). Each plan card in the drawer shows name, price, inclusions list with CheckCircle icons, and a select button. Selecting a plan closes the drawer and updates a `selectedPlan` state on the page. The renewal panel CTA updates to reflect the selected plan price.
+- Remove the greeting/expiry text from inside the membership card if it's duplicated there — the hero band now owns that message.
 
-**Footer nav:**
-- "Previous" — disabled on this page (it's the entry point from magic link)
-- "Continue" → `/renew/payment`
+- Give both cards a slightly more elevated look: `boxShadow: '0 2px 8px rgba(0,0,0,0.10)'`
 
-Do not rebuild everything — surgical updates only. Keep all existing styles, colours, and copy.
+Do not change any copy, layout proportions, stepper, or footer nav.
