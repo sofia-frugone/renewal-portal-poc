@@ -1,32 +1,33 @@
-# Session Prompt — Stage 2: Header Gradient Swap
+# Session Prompt — Stage 2: Welcome Band Background Fix
 
 > Copy everything below this line and paste into Claude Code.
 
 ---
 
-Two surgical changes. Do not rebuild anything else.
+One change only. Do not touch anything else.
 
-**1. Remove the gradient from the welcome band**
-The welcome Box currently has `background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)'` and white text. Change it to sit on the grey background instead:
+The welcome message ("Hi Michael, welcome back.") is currently in its own Box between the stepper and the content area, sitting on a white background that doesn't match the grey card area below it.
+
+Move the welcome message INSIDE the content area Box, as the first element before the Grid. This way it inherits the `#ebebeb` background automatically and there's no colour mismatch.
+
+The content area Box should look like this:
 ```tsx
-<Box sx={{ px: 4, py: 3 }}>
-  <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
-    Hi Michael, welcome back.
-  </Typography>
-  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-    This is your 3rd renewal. Your Standard membership expires on 30 April 2026.
-  </Typography>
+<Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 3, backgroundColor: '#ebebeb' }}>
+  {/* Welcome message — now inside content area */}
+  <Box sx={{ mb: 3 }}>
+    <Typography variant="h5" sx={{ fontWeight: 600, mb: 0.5, color: 'text.primary' }}>
+      Hi Michael, welcome back.
+    </Typography>
+    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+      This is your 3rd renewal. Your Standard membership expires on 30 April 2026.
+    </Typography>
+  </Box>
+
+  {/* Cards grid */}
+  <Grid container spacing={3}>
+    ...
+  </Grid>
 </Box>
 ```
-No background colour — it inherits the grey content area background (`#ebebeb`). Text changes from white to `text.primary` and `text.secondary`.
 
-**2. Add gradient to the navbar (AppBar)**
-The AppBar currently has a flat solid colour. Change it to:
-```tsx
-<AppBar position="static" sx={{
-  background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-  boxShadow: 'none',
-}}>
-```
-
-Do not change anything else.
+Delete the standalone welcome Box that currently sits between the stepper and content area.
