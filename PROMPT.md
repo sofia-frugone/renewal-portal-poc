@@ -1,210 +1,153 @@
-# Session Prompt — Two-column checkout layout for Your Plan page
+# Session Prompt — 5 fixes for Your Plan page
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Overview
+## Fix 1 — Expandable inclusions on plan cards
 
-Restructure the Your Plan page into a two-column checkout layout. Left column (size=8) is the plan selection area. Right column (size=4) is a sticky summary + renew panel. Vehicle verification still gates everything at the top.
+Each horizontal plan card in the left column should have a "View inclusions" toggle that expands to show the full inclusions list inline.
 
----
-
-## New page structure
-
+Add state:
 ```tsx
-<PageShell>
-  <Box sx={{ maxWidth: 1100, mx: 'auto', px: 3, py: 4 }}>
-
-    {/* Welcome — always visible */}
-    <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
-      Hi Michael, time to renew your membership.
-    </Typography>
-    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-      Your Standard plan expires on 30 April 2026. Review your options below.
-    </Typography>
-
-    {/* Vehicle verification — gates everything below */}
-    {!vehicleConfirmed && <RegoVerifySection ... />}
-
-    {/* Main two-column layout — only shown after vehicle confirmed */}
-    {vehicleConfirmed && (
-      <Grid container spacing={3} alignItems="flex-start">
-
-        {/* LEFT — plan selection */}
-        <Grid size={8}>
-
-          {/* Plan comparison cards */}
-          <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-            Choose your plan
-          </Typography>
-          <Grid container spacing={2.5} sx={{ mb: 3 }}>
-            {/* 3 plan cards — same as before */}
-          </Grid>
-
-          {/* Help me choose card */}
-          {/* same as before */}
-
-        </Grid>
-
-        {/* RIGHT — sticky summary panel */}
-        <Grid size={4}>
-          <Box sx={{ position: 'sticky', top: 24 }}>
-            <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)' }}>
-              <CardContent sx={{ p: 3 }}>
-
-                {/* Member identity */}
-                <Typography variant="overline" color="text.secondary">Your membership</Typography>
-                <Typography variant="h6" fontWeight={700} sx={{ mt: 0.5 }}>
-                  Michael Thompson
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5, mb: 0.5 }}>
-                  <Chip label={CURRENT_PLAN} size="small" variant="outlined"
-                    sx={{ color: '#92248E', borderColor: '#92248E', fontWeight: 600, fontSize: '0.7rem' }} />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                  RSA-2024-00891 · Expires 30 Apr 2026
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                  {confirmedRego} · {confirmedRegoState}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1.5, mt: 1.5, mb: 2.5 }}>
-                  <Button variant="outlined" size="small" onClick={() => setEditOpen(true)}
-                    sx={{ borderRadius: 2, textTransform: 'none', borderColor: '#e5e7eb',
-                      color: '#6b7280', fontSize: '0.75rem',
-                      '&:hover': { borderColor: '#92248E', color: '#92248E', backgroundColor: '#fdf4ff' } }}>
-                    Edit details
-                  </Button>
-                  <Button variant="outlined" size="small" onClick={() => setChangeRegoOpen(true)}
-                    sx={{ borderRadius: 2, textTransform: 'none', borderColor: '#e5e7eb',
-                      color: '#6b7280', fontSize: '0.75rem',
-                      '&:hover': { borderColor: '#92248E', color: '#92248E', backgroundColor: '#fdf4ff' } }}>
-                    Change rego
-                  </Button>
-                </Box>
-
-                <Divider sx={{ mb: 2.5 }} />
-
-                {/* Selected plan summary */}
-                <Typography variant="overline" color="text.secondary">Selected plan</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mt: 0.5, mb: 0.5 }}>
-                  <Typography variant="h5" fontWeight={700} color="#92248E">
-                    {selectedPlan}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 2.5 }}>
-                  <Typography variant="h4" fontWeight={700} color="#1f2937">
-                    ${selectedPlanData.price}.00
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">/year</Typography>
-                </Box>
-
-                {/* Downgrade warning */}
-                {isDowngrade && (
-                  <Box sx={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d',
-                    borderRadius: 2, px: 2, py: 1.5, mb: 2 }}>
-                    <Typography variant="body2" fontWeight={600} sx={{ color: '#92400e', mb: 0.5 }}>
-                      ⚠️ Switching to {selectedPlan}
-                    </Typography>
-                    {lostFeatures.map(f => (
-                      <Box key={f} sx={{ display: 'flex', gap: 1, mb: 0.4 }}>
-                        <Typography sx={{ color: '#ef4444', fontSize: '0.8rem' }}>✕</Typography>
-                        <Typography variant="body2" color="text.secondary">{f}</Typography>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-
-                {/* Renew button */}
-                <Button variant="contained" fullWidth size="large"
-                  onClick={() => {
-                    if (isDowngrade) {
-                      setDowngradeReason('');
-                      setDowngradeModalOpen(true);
-                    } else {
-                      navigate('/renew/payment');
-                    }
-                  }}
-                  sx={{
-                    borderRadius: 2, textTransform: 'none', fontWeight: 600, py: 1.5,
-                    background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-                    '&:hover': { background: 'linear-gradient(135deg, #3d003b 0%, #7a1f76 100%)' },
-                  }}>
-                  Renew for ${selectedPlanData.price}.00
-                </Button>
-
-                <Typography variant="caption" color="text.secondary"
-                  sx={{ display: 'block', textAlign: 'center', mt: 1.5 }}>
-                  🔒 Secure checkout · Cancel anytime
-                </Typography>
-
-              </CardContent>
-            </Card>
-          </Box>
-        </Grid>
-
-      </Grid>
-    )}
-
-  </Box>
-</PageShell>
+const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
 ```
 
----
-
-## Key implementation notes
-
-- `position: 'sticky', top: 24` on the right panel wrapper — it follows the user as they scroll through plans
-- Remove the standalone "Renew CTA" card that was below the plan comparison (it's now in the right panel)
-- Remove the "Edit membership details" button from the left — it's now in the right panel as "Edit details"
-- The 3 plan cards stay the same — same selection logic, same Select buttons, same ring on selected
-- "Help me choose" card stays at the bottom of the left column
-- Left column plan cards: use `<Grid container spacing={2.5}>` — keep all 3 plans as `size={12}` stacked vertically (one per row) since the left column is narrower now, OR keep them as `size={4}` in a nested grid (your call — stacked may be cleaner in a narrower column)
-
-For the plan cards in the left column, **stack them vertically** (size={12} each) since size=8 col with 3 equal cards would be cramped. Each card goes full-width of the left column, horizontally laid out inside:
-
+At the bottom of each plan card's CardContent, add:
 ```tsx
-// Each plan card in left column — horizontal layout (icon left, details centre, select button right)
-<Card sx={{ borderRadius: 3, boxShadow: isSelected ? '0 0 0 2px #92248E, 0 2px 8px rgba(0,0,0,0.10)' : '0 2px 8px rgba(0,0,0,0.08)', mb: 2, cursor: 'pointer' }}
-  onClick={() => setSelectedPlan(plan.name)}>
-  <CardContent sx={{ p: 2.5 }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+<Box sx={{ mt: 1.5 }}>
+  <Button
+    size="small"
+    variant="text"
+    onClick={e => { e.stopPropagation(); setExpandedPlan(expandedPlan === plan.name ? null : plan.name); }}
+    endIcon={expandedPlan === plan.name ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+    sx={{ color: '#92248E', textTransform: 'none', fontSize: '0.8rem', p: 0,
+      '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' } }}
+  >
+    {expandedPlan === plan.name ? 'Hide inclusions' : 'View inclusions'}
+  </Button>
 
-      {/* Selection indicator */}
-      <Box sx={{
-        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-        border: isSelected ? '6px solid #92248E' : '2px solid #d1d5db',
-        transition: 'border 0.15s ease',
-      }} />
-
-      {/* Plan info */}
-      <Box sx={{ flex: 1 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
-          <Typography variant="h6" fontWeight={700}>{plan.name}</Typography>
-          {isCurrent && (
-            <Chip label="Current" size="small"
-              sx={{ backgroundColor: '#f3e8ff', color: '#92248E', fontWeight: 600, fontSize: '0.65rem' }} />
-          )}
+  <Collapse in={expandedPlan === plan.name}>
+    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid #f3f4f6' }}>
+      {plan.inclusions.map(item => (
+        <Box key={item} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.6 }}>
+          <CheckCircle sx={{ color: '#10b981', fontSize: 15, mt: '2px', flexShrink: 0 }} />
+          <Typography variant="body2" color="text.secondary">{item}</Typography>
         </Box>
-        <Typography variant="body2" color="text.secondary">
-          {plan.name === 'Basic' ? 'Towing up to 20km, jump start, flat tyre' :
-           plan.name === 'Standard' ? 'Towing up to 50km, fuel delivery, accident coordination' :
-           'Towing up to 100km, lockout, caravan towing, full cover'}
-        </Typography>
-      </Box>
-
-      {/* Price */}
-      <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-        <Typography variant="h6" fontWeight={700} color="#92248E">${plan.price}</Typography>
-        <Typography variant="caption" color="text.secondary">/year</Typography>
-      </Box>
-
+      ))}
     </Box>
-  </CardContent>
-</Card>
+  </Collapse>
+</Box>
 ```
 
-Clicking anywhere on the card selects it (no separate Select button needed — the radio dot + ring makes selection clear).
+Add imports: `import { Collapse } from '@mui/material';`
+`import ExpandMoreIcon from '@mui/icons-material/ExpandMore';`
+`import ExpandLessIcon from '@mui/icons-material/ExpandLess';`
+
+Keep the full inclusions arrays on the plan objects (same as before):
+- Basic: Towing up to 20km, Jump start & battery assistance, Flat tyre assistance
+- Standard: Towing up to 50km, Emergency fuel delivery, Jump start & battery assistance, Flat tyre assistance, Accident coordination
+- Premium: Towing up to 100km, Emergency fuel delivery, Jump start & battery assistance, Flat tyre assistance, Accident coordination, Lockout assistance, Caravan & trailer towing
+
+---
+
+## Fix 2 — Remove rego field from Edit Details dialog
+
+In the Edit Details dialog, remove the vehicle registration TextField entirely. The dialog should only contain:
+- Email address
+- Phone number
+- Home address
+
+Remove this field:
+```tsx
+// DELETE this TextField:
+<TextField label="Vehicle registration" fullWidth value={editForm.rego}
+  onChange={e => setEditForm(f => ({ ...f, rego: e.target.value }))}
+  ... />
+```
+
+Also remove `rego` from the `editForm` state initialiser.
+
+---
+
+## Fix 3 — Quiz never recommends Basic
+
+In the `getRecommendation` function, change so the minimum recommendation is Standard:
+
+```tsx
+const getRecommendation = (answers: Record<number, string>): string => {
+  const score =
+    (answers[0] === 'Daily commuter' ? 2 : answers[0] === 'A few times a week' ? 1 : 0) +
+    (answers[1] === 'Yes, frequently' ? 2 : answers[1] === 'Sometimes' ? 1 : 0) +
+    (answers[2] === 'I tow a caravan or trailer' ? 2 : answers[2] === 'SUV or 4WD' ? 1 : 0);
+  if (score >= 4) return 'Premium';
+  return 'Standard'; // Never suggest Basic — minimum recommendation is Standard
+};
+```
+
+---
+
+## Fix 4 — Quiz result button: "Select this plan" + updates selectedPlan
+
+In the quiz result screen, change the button from "Got it — view plans" to "Select this plan". On click, it should set `selectedPlan` to the quiz result AND close the quiz dialog.
+
+```tsx
+// Replace the result button:
+<Button variant="contained" fullWidth
+  onClick={() => {
+    setSelectedPlan(quizResult!);
+    setQuizOpen(false);
+  }}
+  sx={{ borderRadius: 2, background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
+    '&:hover': { background: 'linear-gradient(135deg, #3d003b 0%, #7a1f76 100%)' },
+    textTransform: 'none', fontWeight: 600 }}>
+  Select {quizResult} plan
+</Button>
+```
+
+---
+
+## Fix 5 — Right panel same height as left column
+
+Make the right panel card stretch to match the left column height. Update the Grid container and right Grid item:
+
+```tsx
+{/* Grid container — stretch both columns to same height */}
+<Grid container spacing={3} alignItems="stretch">
+
+  {/* Left column */}
+  <Grid size={8}>
+    {/* existing content unchanged */}
+  </Grid>
+
+  {/* Right column */}
+  <Grid size={4} sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ position: 'sticky', top: 24 }}>
+      <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+        display: 'flex', flexDirection: 'column' }}>
+        <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+
+          {/* existing member summary content */}
+
+          {/* Push Renew button to bottom */}
+          <Box sx={{ mt: 'auto' }}>
+            <Divider sx={{ mb: 2.5 }} />
+            {/* selected plan + price + renew button + caption */}
+          </Box>
+
+        </CardContent>
+      </Card>
+    </Box>
+  </Grid>
+
+</Grid>
+```
+
+The key changes:
+- `alignItems="stretch"` on the Grid container
+- `display: 'flex', flexDirection: 'column'` on the right Grid item
+- `flex: 1` on CardContent so it fills available height
+- `mt: 'auto'` on the bottom section (plan + price + button) to push it to the bottom of the card
 
 ---
 
