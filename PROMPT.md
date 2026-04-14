@@ -1,47 +1,75 @@
-# Session Prompt — Replace edit icon with outlined button + "Select plan" text fix
+# Session Prompt — Add download invoice button to confirmation page
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Change 1 — Replace edit IconButton with outlined Button
+## Task
 
-In `src/pages/YourPlan.tsx`, replace the edit `IconButton` next to the plan chip with a proper outlined Button.
+In `src/pages/Confirm.tsx`, add a "Download invoice" button.
 
-### Remove
-```tsx
-<IconButton size="small" onClick={() => setEditOpen(true)}
-  sx={{ color: '#6b7280', '&:hover': { color: '#92248E' } }}>
-  <EditIcon fontSize="small" />
-</IconButton>
-```
+### Placement
+Add it below the existing primary action button (e.g. "Back to home" or equivalent CTA), as a secondary outlined button.
 
-### Replace with
+### Button
+
 ```tsx
 <Button
   variant="outlined"
-  size="small"
-  onClick={() => setEditOpen(true)}
+  size="large"
+  startIcon={<DownloadIcon />}
+  onClick={handleDownloadInvoice}
   sx={{
     borderRadius: 2,
     textTransform: 'none',
+    fontWeight: 600,
     borderColor: '#92248E',
     color: '#92248E',
+    px: 3,
     '&:hover': { borderColor: '#7a1f76', backgroundColor: '#fdf4ff' },
   }}
 >
-  Edit membership details
+  Download invoice
 </Button>
 ```
 
-Remove the `EditIcon` import and `IconButton` import if no longer used elsewhere.
+Import: `import DownloadIcon from '@mui/icons-material/Download';`
+
+### Mock handler
+
+```tsx
+const handleDownloadInvoice = () => {
+  // Mock: generate a simple text blob and trigger browser download
+  const invoiceText = [
+    'ROADSIDE ASSISTANCE - TAX INVOICE',
+    '─────────────────────────────────',
+    '',
+    'Invoice number:  INV-2026-00891',
+    'Date:            14 April 2026',
+    '',
+    'Member:          Michael Thompson',
+    'Membership ID:   RSA-2024-00891',
+    'Plan:            Standard',
+    '',
+    'Description      Amount',
+    '─────────────────────────────────',
+    'Annual renewal   $109.00',
+    '',
+    'TOTAL AUD        $109.00',
+    '',
+    'Thank you for renewing your membership.',
+  ].join('\n');
+
+  const blob = new Blob([invoiceText], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'invoice-RSA-2024-00891.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
 
 ---
 
-## Change 2 — "See plan →" → "Select plan →"
-
-In the upgrade nudge strip, change the text link from `See plan →` to `Select plan →`.
-
----
-
-## No other changes.
+## No other changes. Do not touch any other page or component.
