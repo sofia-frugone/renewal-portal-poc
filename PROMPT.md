@@ -1,4 +1,4 @@
-# Session Prompt — Fix right column card padding
+# Session Prompt — Fix right column: remove forced height, natural sizing
 
 > Read CLAUDE.md before writing any code.
 
@@ -6,41 +6,40 @@
 
 ## Task
 
-In `src/pages/YourPlan.tsx`, adjust the padding on the two stacked right-column cards only. Do not touch the left membership card.
+The two right-column cards on the Your Plan page are cutting off content because they are being forced to equal heights via flex. Fix this by removing all forced height sizing from the right column and letting both cards size naturally.
 
-### Top card (renewal panel — the one with $109.00 and RENEW button)
-Reduce the bottom padding — there is too much whitespace at the bottom of this card.
+In `src/pages/YourPlan.tsx`, find the right column (`<Grid size={4}>`) and make these changes:
 
-Find its `CardContent` and change:
+### 1. Remove height forcing from the outer Box
+
 ```tsx
-// From:
-<CardContent sx={{ p: 3 }}>
+// Change from:
+<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
+
 // To:
-<CardContent sx={{ pt: 2.5, px: 3, pb: 2 }}>
+<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 ```
 
-Also remove `justifyContent: 'center'` from this card if present — align content to the top instead:
-```tsx
-// On the Card itself, change/add:
-sx={{ ..., display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}
-```
+### 2. Remove flex stretching from both cards
 
-### Bottom card (upgrade prompt — "Upgrade to Premium")
-Increase the top padding — there is not enough breathing room at the top of this card.
+On the renewal panel Card and the upgrade prompt Card, remove `flex: 1` and `justifyContent`:
 
-Find its `CardContent` and change:
 ```tsx
-// From:
-<CardContent sx={{ p: 3 }}>
+// Change from:
+<Card sx={{ ..., flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
+
 // To:
-<CardContent sx={{ pt: 3.5, px: 3, pb: 3 }}>
+<Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)' }}>
 ```
 
-Also remove `justifyContent: 'center'` from this card if present:
+### 3. Reset CardContent padding on both cards to uniform
+
 ```tsx
-sx={{ ..., display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}
+<CardContent sx={{ p: 3 }}>
 ```
+
+Both cards should now be natural height — as tall as their content needs, stacked with a gap between them. They will not match the left card height exactly and that is fine.
 
 ---
 
-## No other changes. Do not touch any other file or any other card.
+## No other changes. Do not touch the left membership card or any other file.
