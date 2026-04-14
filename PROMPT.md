@@ -1,74 +1,72 @@
-# Session Prompt — Move "Help me choose" to standalone card
+# Session Prompt — Fix stepper background + right column height
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Task
+## Fix 1 — Stepper background (check BOTH files)
 
-In `src/pages/YourPlan.tsx`, move the "Not sure? Help me choose" button out of the upgrade prompt card and into its own full-width white card placed **below** the Grid (below the membership card and renewal panel), before the footer.
+The stepper area is still showing a white background. Check and fix in BOTH locations:
 
-Remove the small text button from the upgrade prompt card entirely.
-
----
-
-## New card layout
-
-Add this directly below the `<Grid container>` closing tag and above the `<FooterNav>`:
-
+### `src/components/RenewalStepper.tsx`
+The outer Box must have NO background color and NO border. Replace its sx entirely with:
 ```tsx
-{/* Plan recommendation card */}
-<Box sx={{
-  mt: 3,
-  backgroundColor: '#fff',
-  borderRadius: 3,
-  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-  p: 3,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 3,
-}}>
-  <Box>
-    <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-      Not sure which plan is right for you?
-    </Typography>
-    <Typography variant="body2" color="text.secondary">
-      Answer 3 quick questions and we'll recommend the best cover for your driving habits.
-    </Typography>
-  </Box>
-  <Button
-    variant="contained"
-    onClick={() => { setQuizOpen(true); setQuizStep(0); setQuizAnswers({}); setQuizResult(null); }}
-    sx={{
-      whiteSpace: 'nowrap',
-      flexShrink: 0,
-      px: 3,
-      py: 1.25,
-      borderRadius: 2,
-      textTransform: 'none',
-      fontWeight: 600,
-      background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-      '&:hover': { background: 'linear-gradient(135deg, #3d003b 0%, #7a1f76 100%)' },
-    }}
-  >
-    Help me choose
-  </Button>
+<Box sx={{ py: 2, px: 3 }}>
+```
+Remove any `backgroundColor`, `background`, `borderBottom`, or `border` from this Box.
+
+### `src/components/PageShell.tsx`
+Find where the `<RenewalStepper />` is rendered. If it is wrapped in a Box or Paper with a white background, remove that background too. The stepper should sit directly on whatever color is behind it with no white wrapper. Example — if you see something like:
+```tsx
+<Box sx={{ backgroundColor: '#fff', borderBottom: '...' }}>
+  <RenewalStepper ... />
 </Box>
 ```
+Remove `backgroundColor` and `borderBottom` from that Box entirely.
 
 ---
 
-## Also remove
+## Fix 2 — Right column height on Your Plan page (`src/pages/YourPlan.tsx`)
 
-In the upgrade prompt card (right column, second card), remove the small text button:
+The right column cards (renewal panel + upgrade card) are not stretching to match the left membership card.
+
+Make the right column a flex column so the two cards share the full height:
+
 ```tsx
-// Remove this:
-<Button size="small" variant="text" onClick={...} sx={{ color: '#92248E', ... }}>
-  Not sure? Help me choose
-</Button>
+{/* Right column — size={4} Grid cell */}
+<Grid size={4}>
+  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, height: '100%' }}>
+
+    {/* Renewal panel card */}
+    <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', flex: 1,
+      display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <CardContent sx={{ p: 3 }}>
+        {/* existing renewal card content unchanged */}
+      </CardContent>
+    </Card>
+
+    {/* Upgrade prompt card */}
+    <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', flex: 1,
+      display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <CardContent sx={{ p: 3 }}>
+        {/* existing upgrade card content unchanged */}
+      </CardContent>
+    </Card>
+
+  </Box>
+</Grid>
+```
+
+The key additions are:
+- Outer Box: `display: 'flex', flexDirection: 'column', gap: 3, height: '100%'`
+- Each Card: `flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center'`
+
+Also ensure the left column Card has `height: '100%'` so the Grid row height is driven by the tallest card:
+```tsx
+<Grid size={8}>
+  <Card sx={{ borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.10)', height: '100%' }}>
 ```
 
 ---
 
-## That's the only change. Do not touch any other files.
+## No other changes. Do not touch any other files.
