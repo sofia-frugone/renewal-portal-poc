@@ -1,50 +1,45 @@
-# Session Prompt — Move greeting below hero + stepper spacing
+# Session Prompt — Fix: greeting must render in grey area, not gradient
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Fix 1 — Move "Hi Michael..." below the gradient
+## Problem
 
-In `src/pages/YourPlan.tsx`, the greeting ("Hi Michael, time to renew your membership." + subtitle) is currently rendering inside the gradient hero area. It must move into the grey content area below the hero.
+The "Hi Michael..." greeting is rendering inside the purple gradient section. It must render in the grey content area below.
 
-Remove the greeting from wherever it currently sits inside the gradient/PageLayout hero section and place it as the FIRST element inside the content area — above the vehicle verification card:
+## Exact fix in `src/pages/YourPlan.tsx`
 
-```tsx
-{/* Grey content area starts here */}
+The `PageLayout` (or `PageHero`) component should only receive:
+- `activeStep={1}`
+- `title="Your plan options"`
+- NO `subtitle` prop — remove any subtitle being passed to PageLayout
 
-{/* Greeting — below the gradient */}
-<Typography variant="h5" fontWeight={700} sx={{ mt: 1, mb: 0.5 }}>
-  Hi Michael, time to renew your membership.
-</Typography>
-<Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-  Your Standard plan expires on 30 April 2026. Review your options below.
-</Typography>
-
-{/* Vehicle verification card */}
-{!vehicleConfirmed && <RegoVerifySection ... />}
-
-{/* Two-column layout */}
-{vehicleConfirmed && ( ... )}
-```
-
----
-
-## Fix 2 — More space between stepper and hero heading
-
-In `src/components/PageHero.tsx`, increase the padding between the stepper and the title:
+The greeting text must be the **first JSX element inside the PageLayout children**, not passed as a prop:
 
 ```tsx
-{/* Stepper */}
-<Box sx={{ px: 3, pt: 3, pb: 4 }}>  {/* increased pb from 2 to 4 */}
-  <RenewalStepper activeStep={activeStep} />
-</Box>
+<PageLayout activeStep={1} title="Your plan options">
 
-{/* Heading */}
-<Box sx={{ textAlign: 'center', px: 3, pt: 0, pb: 4 }}>
-  ...
-</Box>
+  {/* This greeting renders in the GREY area, not the gradient */}
+  <Box sx={{ mb: 3 }}>
+    <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
+      Hi Michael, time to renew your membership.
+    </Typography>
+    <Typography variant="body1" color="text.secondary">
+      Your Standard plan expires on 30 April 2026. Review your options below.
+    </Typography>
+  </Box>
+
+  {/* Vehicle verification card */}
+  {!vehicleConfirmed && ( ... )}
+
+  {/* Two-column layout */}
+  {vehicleConfirmed && ( ... )}
+
+</PageLayout>
 ```
+
+Make sure `PageLayout` does NOT render any subtitle or extra text inside the gradient Box. The gradient section should only contain the Navbar + Stepper + title ("Your plan options"). Everything else is in the grey content area as children.
 
 ---
 
