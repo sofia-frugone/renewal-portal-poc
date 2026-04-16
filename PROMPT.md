@@ -1,74 +1,87 @@
-# Session Prompt — Fix greeting always sits in grey area
+# Session Prompt — Move page heading onto grey background
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Root cause
+## Overview
 
-The `mt: '-96px'` (or similar) negative margin on the content wrapper in `PageLayout.tsx` pulls ALL content — including the greeting — up into the purple gradient zone. This is why the greeting appears on purple even though it's in the content area.
+Move the page title and subtitle out of the gradient hero and onto the grey content area with dark text. The gradient section should only contain the Navbar and Stepper.
 
-## Fix in `src/components/PageLayout.tsx`
+---
 
-Remove the negative margin entirely. Instead, reduce the hero's bottom padding so the gradient ends cleanly, and let content sit naturally below it.
+## Change 1 — `src/components/PageHero.tsx`
+
+Remove the title and subtitle from the PageHero component entirely. PageHero should only render the stepper on the gradient:
 
 ```tsx
-// PageLayout.tsx — updated structure:
-
-<Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ebebeb' }}>
-
-  {/* Gradient top section: Navbar + Stepper + Title */}
-  <Box sx={{ background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)' }}>
-    <Navbar transparent />
-    <PageHero activeStep={activeStep} title={title} />
-  </Box>
-
-  {/* Grey content area — NO negative margin, sits cleanly below gradient */}
-  <Box sx={{ flex: 1, backgroundColor: '#ebebeb', pb: 6 }}>
+export default function PageHero({ activeStep }: { activeStep: number }) {
+  return (
     <Box sx={{
-      maxWidth: 1100,
-      width: '100%',
-      mx: 'auto',
-      px: 3,
-      pt: 3,
-      // NO mt: '-96px' here
+      background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
+      pb: 5,
     }}>
-      {children}
+      <Box sx={{ px: 3, pt: 3, pb: 3 }}>
+        <RenewalStepper activeStep={activeStep} />
+      </Box>
     </Box>
-  </Box>
-
-</Box>
+  );
+}
 ```
 
-## Fix in `src/components/PageHero.tsx`
+Remove the `title` and `subtitle` props entirely.
 
-Reduce the bottom padding — no need for the large pb that was there to accommodate the card overlap:
+---
+
+## Change 2 — `src/components/PageLayout.tsx`
+
+Remove `title` and `subtitle` from the PageLayout props. Pass only `activeStep` and `children` to PageHero.
+
+In the grey content area, render the page heading as the first item before `{children}`:
 
 ```tsx
-<Box sx={{
-  background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
-  pb: 5,
-}}>
-  {/* Stepper */}
-  <Box sx={{ px: 3, pt: 3, pb: 4 }}>
-    <RenewalStepper activeStep={activeStep} />
-  </Box>
+interface PageLayoutProps {
+  activeStep: number;
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+  maxWidth?: number;
+}
 
-  {/* Title only — no subtitle */}
-  <Box sx={{ textAlign: 'center', px: 3, pt: 0, pb: 2 }}>
-    <Typography variant="h4" fontWeight={800} sx={{ color: '#fff' }}>
-      {title}
-    </Typography>
-  </Box>
-</Box>
+export default function PageLayout({ activeStep, title, subtitle, children, maxWidth = 1100 }: PageLayoutProps) {
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ebebeb' }}>
+
+      <Box sx={{ background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)' }}>
+        <Navbar transparent />
+        <PageHero activeStep={activeStep} />
+      </Box>
+
+      <Box sx={{ flex: 1, backgroundColor: '#ebebeb', pb: 6 }}>
+        <Box sx={{ maxWidth: 1100, width: '100%', mx: 'auto', px: 3, pt: 4 }}>
+
+          {/* Page heading — on grey background, dark text */}
+          <Typography variant="h4" fontWeight={800} sx={{ color: '#111827', mb: subtitle ? 0.75 : 3 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body1" sx={{ color: '#6b7280', mb: 3 }}>
+              {subtitle}
+            </Typography>
+          )}
+
+          {children}
+
+        </Box>
+      </Box>
+
+    </Box>
+  );
+}
 ```
 
----
-
-## Result
-
-The greeting ("Hi Michael...") will now always appear on the grey background, as the first element below the gradient, regardless of which page it's on. The cards sit below the greeting in the normal flow.
+Keep the `title` and `subtitle` props on `PageLayout` — they're now rendered in the grey area instead of inside the gradient.
 
 ---
 
-## No other changes.
+## No other changes. Do not touch individual page files or any other component.
