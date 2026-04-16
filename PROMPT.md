@@ -1,45 +1,73 @@
-# Session Prompt — Fix: greeting must render in grey area, not gradient
+# Session Prompt — Fix greeting always sits in grey area
 
 > Read CLAUDE.md before writing any code.
 
 ---
 
-## Problem
+## Root cause
 
-The "Hi Michael..." greeting is rendering inside the purple gradient section. It must render in the grey content area below.
+The `mt: '-96px'` (or similar) negative margin on the content wrapper in `PageLayout.tsx` pulls ALL content — including the greeting — up into the purple gradient zone. This is why the greeting appears on purple even though it's in the content area.
 
-## Exact fix in `src/pages/YourPlan.tsx`
+## Fix in `src/components/PageLayout.tsx`
 
-The `PageLayout` (or `PageHero`) component should only receive:
-- `activeStep={1}`
-- `title="Your plan options"`
-- NO `subtitle` prop — remove any subtitle being passed to PageLayout
-
-The greeting text must be the **first JSX element inside the PageLayout children**, not passed as a prop:
+Remove the negative margin entirely. Instead, reduce the hero's bottom padding so the gradient ends cleanly, and let content sit naturally below it.
 
 ```tsx
-<PageLayout activeStep={1} title="Your plan options">
+// PageLayout.tsx — updated structure:
 
-  {/* This greeting renders in the GREY area, not the gradient */}
-  <Box sx={{ mb: 3 }}>
-    <Typography variant="h5" fontWeight={700} sx={{ mb: 0.5 }}>
-      Hi Michael, time to renew your membership.
-    </Typography>
-    <Typography variant="body1" color="text.secondary">
-      Your Standard plan expires on 30 April 2026. Review your options below.
-    </Typography>
+<Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ebebeb' }}>
+
+  {/* Gradient top section: Navbar + Stepper + Title */}
+  <Box sx={{ background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)' }}>
+    <Navbar transparent />
+    <PageHero activeStep={activeStep} title={title} />
   </Box>
 
-  {/* Vehicle verification card */}
-  {!vehicleConfirmed && ( ... )}
+  {/* Grey content area — NO negative margin, sits cleanly below gradient */}
+  <Box sx={{ flex: 1, backgroundColor: '#ebebeb', pb: 6 }}>
+    <Box sx={{
+      maxWidth: 1100,
+      width: '100%',
+      mx: 'auto',
+      px: 3,
+      pt: 3,
+      // NO mt: '-96px' here
+    }}>
+      {children}
+    </Box>
+  </Box>
 
-  {/* Two-column layout */}
-  {vehicleConfirmed && ( ... )}
-
-</PageLayout>
+</Box>
 ```
 
-Make sure `PageLayout` does NOT render any subtitle or extra text inside the gradient Box. The gradient section should only contain the Navbar + Stepper + title ("Your plan options"). Everything else is in the grey content area as children.
+## Fix in `src/components/PageHero.tsx`
+
+Reduce the bottom padding — no need for the large pb that was there to accommodate the card overlap:
+
+```tsx
+<Box sx={{
+  background: 'linear-gradient(135deg, #4a0048 0%, #92248E 100%)',
+  pb: 5,
+}}>
+  {/* Stepper */}
+  <Box sx={{ px: 3, pt: 3, pb: 4 }}>
+    <RenewalStepper activeStep={activeStep} />
+  </Box>
+
+  {/* Title only — no subtitle */}
+  <Box sx={{ textAlign: 'center', px: 3, pt: 0, pb: 2 }}>
+    <Typography variant="h4" fontWeight={800} sx={{ color: '#fff' }}>
+      {title}
+    </Typography>
+  </Box>
+</Box>
+```
+
+---
+
+## Result
+
+The greeting ("Hi Michael...") will now always appear on the grey background, as the first element below the gradient, regardless of which page it's on. The cards sit below the greeting in the normal flow.
 
 ---
 
